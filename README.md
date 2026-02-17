@@ -1,15 +1,16 @@
 # digital-attendance-system
 main.cpp
+
 Digital Attendance System (C++)
 
-Course Information
+#Course Information
 Course Code: EEE227
 
 Programme: HND Electrical Engineering (Level 200)
 
 Assessment Type: Mid Semester Capstone Project
 
-Project Description
+#Project Description
 This project is a console-based digital attendance system developed using C++.
 
 It is designed to replace the traditional paper-based attendance system used in lecture halls.
@@ -18,7 +19,7 @@ The system allows lecturers to register students, create lecture sessions, mark 
 
 and generate attendance reports. All data is stored in text files to allow offline usage.
 
-Features
+#Features
 Register students
 
 View registered students
@@ -31,7 +32,7 @@ View attendance reports and summary
 
 Save and load student records from file
 
-Development Tools
+#Development Tools
 Programming Language: C++
 
 IDE: Vscode or GDB ONLINE
@@ -40,7 +41,7 @@ Platform: Windows
 
 Version Control: GitHub
 
-File Structure
+#File Structure
 main.cpp : Main program source code
 
 students.txt : Stores registered students
@@ -49,12 +50,12 @@ students.txt : Stores registered students
 
 README.md : Project documentation
 
-How to Run
+#How to Run
 Open the project in Vscode or GDB ONLINE
 
 Compile and run main.cpp
 
 Use the menu options to interact with the system
 
-Author
+#Author
 Benson Marcus
