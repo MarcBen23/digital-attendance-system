@@ -294,3 +294,227 @@ public:
         return true;
     }
 };
+
+// ==============================
+// 4. SYSTEM MANAGER CLASS
+// ==============================
+class AttendanceSystem {
+private:
+    vector<Student> students;
+    vector<AttendanceSession> sessions;
+    string studentsFile = "students.txt";
+    
+public:
+    // Constructor
+    AttendanceSystem() {
+        loadStudents();
+    }
+    
+    // ========== STUDENT MANAGEMENT ==========
+    
+    // Register a new student
+    void registerStudent() {
+        cout << "\n--- REGISTER NEW STUDENT ---\n";
+        string index, name;
+        
+        cout << "Enter index number: ";
+        getline(cin, index);
+        
+        // Check if student already exists
+        for (const auto& student : students) {
+            if (student.getIndex() == index) {
+                cout << "Error: Student with index " << index << " already exists!" << endl;
+                return;
+            }
+        }
+        
+        cout << "Enter student name: ";
+        getline(cin, name);
+        
+        Student newStudent(index, name);
+        students.push_back(newStudent);
+        
+        cout << "Student registered successfully!" << endl;
+        saveStudents();
+    }
+    
+    // View all students
+    void viewAllStudents() const {
+        cout << "\n--- ALL REGISTERED STUDENTS ---\n";
+        if (students.empty()) {
+            cout << "No students registered yet." << endl;
+            return;
+        }
+        
+        cout << left << setw(15) << "Index Number" 
+             << setw(25) << "Student Name" << endl;
+        cout << string(40, '-') << endl;
+        
+        for (const auto& student : students) {
+            student.display();
+        }
+        
+        cout << "\nTotal: " << students.size() << " students" << endl;
+    }
+    
+    // Search student by index
+    void searchStudent() const {
+        cout << "\n--- SEARCH STUDENT ---\n";
+        string index;
+        
+        cout << "Enter index number to search: ";
+        getline(cin, index);
+        
+        bool found = false;
+        for (const auto& student : students) {
+            if (student.getIndex() == index) {
+                cout << "\nSTUDENT FOUND:\n";
+                cout << "Index: " << student.getIndex() << endl;
+                cout << "Name: " << student.getName() << endl;
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            cout << "Student with index " << index << " not found." << endl;
+        }
+    }
+    
+    // ========== SESSION MANAGEMENT ==========
+    
+    // Create a new attendance session
+    void createSession() {
+        cout << "\n--- CREATE NEW ATTENDANCE SESSION ---\n";
+        
+        if (students.empty()) {
+            cout << "Error: No students registered. Please register students first." << endl;
+            return;
+        }
+        
+        string course, date, time;
+        int duration;
+        
+        cout << "Enter course code: ";
+        getline(cin, course);
+        
+        cout << "Enter date (YYYY-MM-DD): ";
+        getline(cin, date);
+        
+        cout << "Enter start time (HH:MM): ";
+        getline(cin, time);
+        
+        cout << "Enter duration (hours): ";
+        cin >> duration;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        // Create new session
+        AttendanceSession newSession(course, date, time, duration);
+        newSession.initializeRecords(students);
+        
+        sessions.push_back(newSession);
+        
+        cout << "\nSession created successfully!" << endl;
+        newSession.displayHeader();
+    }
+    
+    // View all sessions
+    void viewAllSessions() const {
+        cout << "\n--- ALL ATTENDANCE SESSIONS ---\n";
+        if (sessions.empty()) {
+            cout << "No sessions created yet." << endl;
+            return;
+        }
+        
+        for (size_t i = 0; i < sessions.size(); i++) {
+            cout << i + 1 << ". " << sessions[i].getCourseCode() 
+                 << " - " << sessions[i].getDate() 
+                 << " (" << sessions[i].getStartTime() << ")" << endl;
+        }
+    }
+    
+    // ========== ATTENDANCE MARKING ==========
+    
+    // Mark attendance for a session
+    void markAttendance() {
+        if (sessions.empty()) {
+            cout << "No sessions available. Please create a session first." << endl;
+            return;
+        }
+        
+        cout << "\n--- MARK ATTENDANCE ---\n";
+        viewAllSessions();
+        
+        int choice;
+        cout << "\nSelect session number: ";
+        cin >> choice;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        if (choice < 1 || choice > (int)sessions.size()) {
+            cout << "Invalid session selection!" << endl;
+            return;
+        }
+        
+        AttendanceSession& session = sessions[choice - 1];
+        session.displayHeader();
+        
+        cout << "\nMark attendance for each student:\n";
+        cout << "(P = Present, A = Absent, L = Late)\n" << endl;
+        
+        vector<AttendanceRecord> records = session.getRecords();
+        
+        for (size_t i = 0; i < students.size(); i++) {
+            cout << i + 1 << ". " << students[i].getIndex() 
+                 << " - " << students[i].getName() << ": ";
+            
+            string input;
+            getline(cin, input);
+            
+            if (!input.empty()) {
+                char status = toupper(input[0]);
+                if (status == 'P' || status == 'A' || status == 'L') {
+                    session.updateRecord(students[i].getIndex(), status);
+                } else {
+                    cout << "  Invalid input. Keeping as Absent." << endl;
+                }
+            }
+        }
+        
+        cout << "\nAttendance marked successfully!" << endl;
+    }
+    
+    // ========== REPORTS ==========
+    
+    // View attendance for a session
+    void viewAttendanceReport() {
+        if (sessions.empty()) {
+            cout << "No sessions available." << endl;
+            return;
+        }
+        
+        cout << "\n--- VIEW ATTENDANCE REPORT ---\n";
+        viewAllSessions();
+        
+        int choice;
+        cout << "\nSelect session number: ";
+        cin >> choice;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        if (choice < 1 || choice > (int)sessions.size()) {
+            cout << "Invalid session selection!" << endl;
+            return;
+        }
+        
+        AttendanceSession& session = sessions[choice - 1];
+        session.displayHeader();
+        session.displayAttendance(students);
+        
+        cout << "\nGenerate summary? (Y/N): ";
+        char response;
+        cin >> response;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        if (toupper(response) == 'Y') {
+            session.displaySummary(students);
+        }
+    }
