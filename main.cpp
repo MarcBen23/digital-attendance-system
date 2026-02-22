@@ -518,3 +518,261 @@ public:
             session.displaySummary(students);
         }
     }
+
+// View attendance summary
+    void viewAttendanceSummary() {
+        if (sessions.empty()) {
+            cout << "No sessions available." << endl;
+            return;
+        }
+        
+        cout << "\n--- ATTENDANCE SUMMARY ---\n";
+        
+        for (auto& session : sessions) {
+            session.displaySummary(students);
+        }
+    }
+    
+    // ========== FILE OPERATIONS ==========
+    
+    // Save all students to file
+    void saveStudents() {
+        ofstream file(studentsFile);
+        if (!file.is_open()) {
+            cout << "Error: Could not save students to file!" << endl;
+            return;
+        }
+        
+        for (const auto& student : students) {
+            file << student.toString() << endl;
+        }
+        
+        file.close();
+        cout << "Students saved to " << studentsFile << endl;
+    }
+    
+    // Load students from file
+    void loadStudents() {
+        ifstream file(studentsFile);
+        if (!file.is_open()) {
+            cout << "No existing student data found. Starting fresh." << endl;
+            return;
+        }
+        
+        students.clear();
+        string line;
+        
+        while (getline(file, line)) {
+            if (!line.empty()) {
+                Student student = Student::fromString(line);
+                students.push_back(student);
+            }
+        }
+        
+        file.close();
+        cout << "Loaded " << students.size() << " students from " << studentsFile << endl;
+    }
+    
+    // Save all sessions
+    void saveAllSessions() {
+        for (auto& session : sessions) {
+            session.saveToFile();
+        }
+        cout << "All sessions saved." << endl;
+    }
+    
+    // Load a specific session from file
+    void loadSessionFromFile() {
+        cout << "\n--- LOAD SESSION FROM FILE ---\n";
+        cout << "Enter session filename (e.g., session_EEE227_2026_02_10.txt): ";
+        
+        string filename;
+        getline(cin, filename);
+        
+        AttendanceSession newSession;
+        if (newSession.loadFromFile(filename, students)) {
+            sessions.push_back(newSession);
+            cout << "Session loaded successfully!" << endl;
+        }
+    }
+    
+    // ========== DEMO MODE ==========
+    
+    // Add demo data for testing
+    void addDemoData() {
+        cout << "\nAdding demo data...\n";
+        
+        // Add demo students
+        students.push_back(Student("EE2001", "Kwame Mensah"));
+        students.push_back(Student("EE2002", "Ama Boateng"));
+        students.push_back(Student("EE2003", "Kojo Asare"));
+        students.push_back(Student("EE2004", "Esi Ampofo"));
+        students.push_back(Student("EE2005", "Yaw Ofori"));
+        
+        // Add demo session
+        AttendanceSession demoSession("EEE227", "2026-02-10", "09:00", 2);
+        demoSession.initializeRecords(students);
+        demoSession.updateRecord("EE2001", 'P');
+        demoSession.updateRecord("EE2002", 'L');
+        demoSession.updateRecord("EE2003", 'P');
+        demoSession.updateRecord("EE2004", 'A');
+        demoSession.updateRecord("EE2005", 'P');
+        
+        sessions.push_back(demoSession);
+        
+        // Save data
+        saveStudents();
+        demoSession.saveToFile();
+        
+        cout << "Demo data added successfully!" << endl;
+    }
+    
+    // ========== MAIN MENU ==========
+    
+    void displayMenu() {
+        cout << "\n==========================================" << endl;
+        cout << "    DIGITAL ATTENDANCE SYSTEM" << endl;
+        cout << "==========================================" << endl;
+        cout << "1. Student Management" << endl;
+        cout << "2. Attendance Session Management" << endl;
+        cout << "3. Mark Attendance" << endl;
+        cout << "4. Reports and Summary" << endl;
+        cout << "5. File Operations" << endl;
+        cout << "6. Add Demo Data (for testing)" << endl;
+        cout << "0. Exit" << endl;
+        cout << "==========================================" << endl;
+        cout << "Registered Students: " << students.size() << endl;
+        cout << "Active Sessions: " << sessions.size() << endl;
+        cout << "==========================================" << endl;
+    }
+    
+    void studentManagementMenu() {
+        int choice;
+        do {
+            cout << "\n--- STUDENT MANAGEMENT ---\n";
+            cout << "1. Register New Student\n";
+            cout << "2. View All Students\n";
+            cout << "3. Search Student by Index\n";
+            cout << "0. Back to Main Menu\n";
+            cout << "Enter choice: ";
+            cin >> choice;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            
+            switch (choice) {
+                case 1: registerStudent(); break;
+                case 2: viewAllStudents(); break;
+                case 3: searchStudent(); break;
+                case 0: cout << "Returning to main menu...\n"; break;
+                default: cout << "Invalid choice!\n";
+            }
+        } while (choice != 0);
+    }
+    
+    void sessionManagementMenu() {
+        int choice;
+        do {
+            cout << "\n--- SESSION MANAGEMENT ---\n";
+            cout << "1. Create New Lecture Session\n";
+            cout << "2. View All Sessions\n";
+            cout << "0. Back to Main Menu\n";
+            cout << "Enter choice: ";
+            cin >> choice;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            
+            switch (choice) {
+                case 1: createSession(); break;
+                case 2: viewAllSessions(); break;
+                case 0: cout << "Returning to main menu...\n"; break;
+                default: cout << "Invalid choice!\n";
+            }
+        } while (choice != 0);
+    }
+    
+    void reportsMenu() {
+        int choice;
+        do {
+            cout << "\n--- REPORTS AND SUMMARY ---\n";
+            cout << "1. View Attendance Report for Session\n";
+            cout << "2. View Attendance Summary\n";
+            cout << "0. Back to Main Menu\n";
+            cout << "Enter choice: ";
+            cin >> choice;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            
+            switch (choice) {
+                case 1: viewAttendanceReport(); break;
+                case 2: viewAttendanceSummary(); break;
+                case 0: cout << "Returning to main menu...\n"; break;
+                default: cout << "Invalid choice!\n";
+            }
+        } while (choice != 0);
+    }
+    
+    void fileOperationsMenu() {
+        int choice;
+        do {
+            cout << "\n--- FILE OPERATIONS ---\n";
+            cout << "1. Save All Students to File\n";
+            cout << "2. Save All Sessions to Files\n";
+            cout << "3. Load Session from File\n";
+            cout << "0. Back to Main Menu\n";
+            cout << "Enter choice: ";
+            cin >> choice;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            
+            switch (choice) {
+                case 1: saveStudents(); break;
+                case 2: saveAllSessions(); break;
+                case 3: loadSessionFromFile(); break;
+                case 0: cout << "Returning to main menu...\n"; break;
+                default: cout << "Invalid choice!\n";
+            }
+        } while (choice != 0);
+    }
+    
+    // Main program loop
+    void run() {
+        int choice;
+        
+        do {
+            displayMenu();
+            cout << "Enter your choice: ";
+            cin >> choice;
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            
+            switch (choice) {
+                case 1: studentManagementMenu(); break;
+                case 2: sessionManagementMenu(); break;
+                case 3: markAttendance(); break;
+                case 4: reportsMenu(); break;
+                case 5: fileOperationsMenu(); break;
+                case 6: addDemoData(); break;
+                case 0: 
+                    cout << "\nSaving data before exit...\n";
+                    saveStudents();
+                    saveAllSessions();
+                    cout << "Goodbye!\n";
+                    break;
+                default: 
+                    cout << "Invalid choice! Please try again.\n";
+            }
+            
+        } while (choice != 0);
+    }
+};
+
+// ==============================
+// 5. MAIN FUNCTION
+// ==============================
+int main() {
+    cout << "==========================================" << endl;
+    cout << "  DIGITAL ATTENDANCE SYSTEM - EEE227" << endl;
+    cout << "      Midterm Capstone Project" << endl;
+    cout << "==========================================" << endl;
+    cout << "Programme: HND Electrical Engineering (L200)\n" << endl;
+    
+    AttendanceSystem system;
+    system.run();
+    
+    return 0;
+}
